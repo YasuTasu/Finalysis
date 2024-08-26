@@ -114,7 +114,7 @@ if file_type == "画像ファイル":
                 max_tokens=1000  # トークン数を増やす
             )
             
-            analysis = response.choices[0].message['content'].strip()
+            analysis = response.choices[0]['message']['content'].strip()
             st.write(analysis)
             
             # 生成された分析結果をダウンロードするボタンを設置
@@ -147,14 +147,14 @@ elif file_type == "PDFファイル":
         
         try:
             response = openai.ChatCompletion.create(
-                model="gpt-4o-mini",  # 小型モデルを指定
+                model="gpt-4-turbo",  # 使用するモデルを指定
                 messages=[
                     {"role": "user", "content": gpt_prompt},
                 ],
                 max_tokens=1000  # トークン数を増やす
             )
             
-            analysis = response.choices[0].message['content'].strip()
+            analysis = response.choices[0]['message']['content'].strip()
             st.write(analysis)
             
             # 生成された分析結果をダウンロードするボタンを設置

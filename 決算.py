@@ -112,7 +112,7 @@ if file_type == "画像ファイル":
         
         try:
             response = openai.ChatCompletion.create(
-                model="gpt-4-turbo",  # 軽量モデルを指定
+                model="gpt-4o-mini",  # 小型モデルを指定
                 messages=[
                     {"role": "user", "content": gpt_prompt},
                 ],
@@ -152,7 +152,7 @@ elif file_type == "PDFファイル":
         
         try:
             response = openai.ChatCompletion.create(
-                model="gpt-4-turbo",  # 軽量モデルを指定
+                model="gpt-4o-mini",  # 小型モデルを指定
                 messages=[
                     {"role": "user", "content": gpt_prompt},
                 ],

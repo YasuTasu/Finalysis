@@ -108,21 +108,24 @@ if file_type == "画像ファイル":
         
         try:
             response = openai.ChatCompletion.create(
-                model="gpt-4-turbo",  # 軽量モデルを指定
+                model="gpt-4-turbo",  # 修正箇所
                 messages=[
                     {"role": "user", "content": gpt_prompt},
                 ],
-                max_tokens=1000  # トークン数を増やす
+                max_tokens=1000
             )
             
-            analysis = response.choices[0].message['content'].strip()
+            analysis = response.choices[0].message['content'].strip()  # 修正箇所
             st.write(analysis)
             
             # 生成された分析結果をダウンロードするボタンを設置
             st.download_button(label='分析結果をダウンロード', data=analysis, file_name='analysis.txt', mime='text/plain')
         
-        except openai.error.OpenAIError as e:
+        except openai.OpenAIError as e:  # 修正箇所
             st.error(f"APIリクエストでエラーが発生しました: {e}")
+
+        except Exception as e:
+            st.error(f"予期しないエラーが発生しました: {e}")
 
 elif file_type == "PDFファイル":
     file_upload = st.file_uploader("ここに決算資料のPDFファイルをアップロードしてください。", type=["pdf"])
@@ -148,18 +151,21 @@ elif file_type == "PDFファイル":
         
         try:
             response = openai.ChatCompletion.create(
-                model="gpt-4-turbo",  # 軽量モデルを指定
+                model="gpt-4-turbo",  # 修正箇所
                 messages=[
                     {"role": "user", "content": gpt_prompt},
                 ],
-                max_tokens=1000  # トークン数を増やす
+                max_tokens=1000
             )
             
-            analysis = response.choices[0].message['content'].strip()
+            analysis = response.choices[0].message['content'].strip()  # 修正箇所
             st.write(analysis)
             
             # 生成された分析結果をダウンロードするボタンを設置
             st.download_button(label='分析結果をダウンロード', data=analysis, file_name='analysis.txt', mime='text/plain')
         
-        except openai.error.OpenAIError as e:
+        except openai.OpenAIError as e:  # 修正箇所
             st.error(f"APIリクエストでエラーが発生しました: {e}")
+
+        except Exception as e:
+            st.error(f"予期しないエラーが発生しました: {e}")

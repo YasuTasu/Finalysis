@@ -147,7 +147,7 @@ elif file_type == "PDFファイル":
         
         try:
             response = openai.ChatCompletion.create(
-                model="gpt-4-turbo",  # 使用するモデルを指定
+                model="gpt-4o-mini",  # 小型モデルを指定
                 messages=[
                     {"role": "user", "content": gpt_prompt},
                 ],

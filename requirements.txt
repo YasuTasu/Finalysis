@@ -6,3 +6,4 @@ yfinance
 setuptools
 pytesseract
 openai
+PyMuPDF

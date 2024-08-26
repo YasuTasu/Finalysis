@@ -1,12 +1,11 @@
 import streamlit as st
 from PIL import Image
-import pyocr
+import pytesseract
 import platform
 import openai
 import os
 import fitz  # PyMuPDFをインポート
 import base64
-import io
 
 # ローカルのPNG画像を読み込む関数
 def get_base64_of_bin_file(bin_file):
@@ -14,39 +13,52 @@ def get_base64_of_bin_file(bin_file):
         data = f.read()
     return base64.b64encode(data).decode()
 
-# Base64エンコードする関数を修正
-def get_base64_of_image(image):
-    buffered = io.BytesIO()
-    image.save(buffered, format="PNG")
-    return base64.b64encode(buffered.getvalue()).decode()
+# ここで、背景にしたい画像のパスを指定します
+img_file_path = 'C:\\Users\\81804\\OneDrive\\デスクトップ\\GLOBIS\\Tech0\\コーディング\\アプリ作成\\起動コード格納\\決算予測アプリ\\2024-08-25 1300.png'
 
-# CSSで背景画像を設定する関数
-def set_background_image(image):
-    img_base64 = get_base64_of_image(image)
-    page_bg_img = f'''
-    <style>
-    .stApp {{
-        background-image: url("data:image/png;base64,{img_base64}");
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-        background-position: center;
-    }}
-    </style>
-    '''
-    st.markdown(page_bg_img, unsafe_allow_html=True)
+# 画像をBase64にエンコード
+img_base64 = get_base64_of_bin_file(img_file_path)
 
-# それぞれのOSにインストールされるtesseractの場所を指定
+# CSSで背景画像を設定
+page_bg_img = f'''
+<style>
+.stApp {{
+    background-image: url("data:image/png;base64,{img_base64}");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+}}
+</style>
+'''
+
+st.markdown(page_bg_img, unsafe_allow_html=True)
+
+# カスタムCSSを追加
+st.markdown("""
+<style>
+.stDownloadButton > button {
+    background-color: #FFD700;
+    color: white;
+    border-radius: 5px;
+    padding: 8px 16px;
+    font-size: 16px;
+    border: none;
+    margin-bottom: 60px;
+}
+.stDownloadButton > button:hover {
+    background-color: #FFFF00;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# Tesseractのパスを指定 (Windows用)
 if platform.system() == "Windows":
-    pyocr.tesseract.TESSERACT_CMD = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
-else:
-    pyocr.tesseract.TESSERACT_CMD = r"/usr/local/bin/tesseract"
+    pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
 
-# OCRエンジンを取得
-tools = pyocr.get_available_tools()
-if len(tools) == 0:
-    raise RuntimeError("No OCR tool found")
-tool = tools[0]
+# OCRエンジンの設定
+def ocr_image(image_path, lang='jpn'):
+    return pytesseract.image_to_string(image_path, lang=lang)
 
 # 画像読み込みのための言語と言語のコードを変換するリストを設定
 set_language_list = {
@@ -76,14 +88,11 @@ file_type = st.selectbox("ファイルの種類を選んでください。", ["�
 
 if file_type == "画像ファイル":
     file_upload = st.file_uploader("ここに決算資料の画像ファイルをアップロードしてください。", type=["png", "jpg"])
-
+    
     if file_upload is not None:
-        image = Image.open(file_upload)
-        st.image(image)
-        set_background_image(image)
-        
+        st.image(file_upload)
         selected_language = st.selectbox("文字認識する言語を選んでください。", list(set_language_list.keys()))
-        txt = tool.image_to_string(image, lang=set_language_list[selected_language])
+        txt = ocr_image(file_upload, lang=set_language_list[selected_language])
         
         # 抽出されたテキストを隠すためにst.expanderを使用
         with st.expander("抽出されたテキスト", expanded=False):

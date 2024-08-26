@@ -7,14 +7,14 @@ import os
 import fitz  # PyMuPDFをインポート
 import base64
 
-# 画像をBase64にエンコードする関数
+# ローカルのPNG画像を読み込む関数
 def get_base64_of_bin_file(bin_file):
     with open(bin_file, 'rb') as f:
         data = f.read()
     return base64.b64encode(data).decode()
 
-# アプリのディレクトリにある画像ファイルのパスを設定
-img_file_path = '2024-08-25 1300.png'  # ディレクトリ内のファイル名を指定
+# ここで、背景にしたい画像のパスを指定します
+img_file_path = 'C:\\Users\\81804\\OneDrive\\デスクトップ\\GLOBIS\\Tech0\\コーディング\\アプリ作成\\起動コード格納\\決算予測アプリ\\2024-08-25 1300.png'
 
 # 画像をBase64にエンコード
 img_base64 = get_base64_of_bin_file(img_file_path)
@@ -108,24 +108,21 @@ if file_type == "画像ファイル":
         
         try:
             response = openai.ChatCompletion.create(
-                model="gpt-4-turbo",  # 修正箇所
+                model="gpt-4-turbo",  # 軽量モデルを指定
                 messages=[
                     {"role": "user", "content": gpt_prompt},
                 ],
-                max_tokens=1000
+                max_tokens=1000  # トークン数を増やす
             )
             
-            analysis = response.choices[0].message['content'].strip()  # 修正箇所
+            analysis = response.choices[0].message['content'].strip()
             st.write(analysis)
             
             # 生成された分析結果をダウンロードするボタンを設置
             st.download_button(label='分析結果をダウンロード', data=analysis, file_name='analysis.txt', mime='text/plain')
         
-        except openai.OpenAIError as e:  # 修正箇所
+        except openai.error.OpenAIError as e:
             st.error(f"APIリクエストでエラーが発生しました: {e}")
-
-        except Exception as e:
-            st.error(f"予期しないエラーが発生しました: {e}")
 
 elif file_type == "PDFファイル":
     file_upload = st.file_uploader("ここに決算資料のPDFファイルをアップロードしてください。", type=["pdf"])
@@ -151,21 +148,18 @@ elif file_type == "PDFファイル":
         
         try:
             response = openai.ChatCompletion.create(
-                model="gpt-4-turbo",  # 修正箇所
+                model="gpt-4-turbo",  # 軽量モデルを指定
                 messages=[
                     {"role": "user", "content": gpt_prompt},
                 ],
-                max_tokens=1000
+                max_tokens=1000  # トークン数を増やす
             )
             
-            analysis = response.choices[0].message['content'].strip()  # 修正箇所
+            analysis = response.choices[0].message['content'].strip()
             st.write(analysis)
             
             # 生成された分析結果をダウンロードするボタンを設置
             st.download_button(label='分析結果をダウンロード', data=analysis, file_name='analysis.txt', mime='text/plain')
         
-        except openai.OpenAIError as e:  # 修正箇所
+        except openai.error.OpenAIError as e:
             st.error(f"APIリクエストでエラーが発生しました: {e}")
-
-        except Exception as e:
-            st.error(f"予期しないエラーが発生しました: {e}")

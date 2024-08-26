@@ -14,7 +14,7 @@ def get_base64_of_bin_file(bin_file):
     return base64.b64encode(data).decode()
 
 # ここで、背景にしたい画像のパスを指定します
-img_file_path = 'C:\\Users\\81804\\OneDrive\\デスクトップ\\GLOBIS\\Tech0\\コーディング\\アプリ作成\\起動コード格納\\決算予測アプリ\\2024-08-25 1300.png'
+img_file_path = '2024-08-25 1300.png'
 
 # 画像をBase64にエンコード
 img_base64 = get_base64_of_bin_file(img_file_path)

@@ -1,6 +1,6 @@
 import streamlit as st
 from PIL import Image
-import pyocr
+import pytesseract
 import platform
 import openai
 import os
@@ -14,7 +14,7 @@ def get_base64_of_bin_file(bin_file):
     return base64.b64encode(data).decode()
 
 # ここで、背景にしたい画像のパスを指定します
-img_file_path = 'C:\\Users\\81804\\OneDrive\\デスクトップ\\GLOBIS\\Tech0\\コーディング\\アプリ作成\\起動コード格納\\決算予測アプリ\\2024-08-25 1300.png'
+img_file_path = 'C:\\Users\\81804\\OneDrive\\デスクトップ\\GLOBIS\\Tech0\\コーディング\\アプリ作成\\起動コード格納\\決算予測アプリ\\2024-08-25 115707.png'
 
 # 画像をBase64にエンコード
 img_base64 = get_base64_of_bin_file(img_file_path)
@@ -44,7 +44,7 @@ st.markdown("""
     padding: 8px 16px;
     font-size: 16px;
     border: none;
-    margin-bottom: 60px;
+    margin-bottom : 60px
 }
 .stDownloadButton > button:hover {
     background-color: #FFFF00;
@@ -52,17 +52,11 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# それぞれのOSにインストールされるtesseractの場所を指定
+# Tesseractのコマンドを指定（必要に応じて）
 if platform.system() == "Windows":
-    pyocr.tesseract.TESSERACT_CMD = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
+    pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
 else:
-    pyocr.tesseract.TESSERACT_CMD = r"/usr/local/bin/tesseract"
-
-# OCRエンジンを取得
-tools = pyocr.get_available_tools()
-if len(tools) == 0:
-    raise RuntimeError("No OCR tool found")
-tool = tools[0]
+    pytesseract.pytesseract.tesseract_cmd = r"/usr/bin/tesseract"
 
 # 画像読み込みのための言語と言語のコードを変換するリストを設定
 set_language_list = {
@@ -83,6 +77,19 @@ prompt_option_list = {
 # APIキーの設定
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+# 簡易的なドキュメント検索関数
+def search_related_documents(query):
+    # ダミーデータ
+    dummy_documents = {
+        "2024 Q1 Financial Report": "2024年第1四半期の決算報告...",
+        "Market Analysis 2024": "2024年の市場分析に関するレポート...",
+        "Competitor Analysis": "競合他社分析の詳細..."
+    }
+    
+    # クエリに基づく簡易検索
+    related_docs = [doc for title, doc in dummy_documents.items() if query.lower() in title.lower() or query.lower() in doc.lower()]
+    return "\n".join(related_docs) if related_docs else "関連するドキュメントが見つかりませんでした。"
+
 # Streamlit アプリケーションの開始
 st.title("決算資料分析アプリ")
 
@@ -95,38 +102,25 @@ if file_type == "画像ファイル":
     
     if file_upload is not None:
         st.image(file_upload)
-        selected_language = st.selectbox("文字認識する言語を選んでください。", list(set_language_list.keys()))
-        txt = tool.image_to_string(Image.open(file_upload), lang=set_language_list[selected_language])
+        txt = pytesseract.image_to_string(Image.open(file_upload), lang=set_language_list[st.selectbox("文字認識する言語を選んでください。", set_language_list.keys())])
         
-        # 抽出されたテキストを隠すためにst.expanderを使用
-        with st.expander("抽出されたテキスト", expanded=False):
-            st.write(txt)
-
-        # プロンプト選択のための選択肢を表示
-        selected_prompt = st.selectbox("分析の種類を選んでください。", list(prompt_option_list.keys()))
-        prompt = prompt_option_list[selected_prompt]
-
         # GPTに分析させる
-        st.write("分析結果:")
-        gpt_prompt = f"{prompt}\n\n以下の決算資料の内容を分析してください:\n\n{txt[:3000]}"  # テキストを3000文字以内に制限
+        st.write("GPTによる分析:")
+        prompt = f"以下の決算資料の内容を分析し、重要なポイントを要約してください:\n\n{txt[:3000]}"  # テキストを3000文字以内に制限
         
-        try:
-            response = openai.ChatCompletion.create(
-                model="gpt-4-turbo",  # 軽量モデルを指定
-                messages=[
-                    {"role": "user", "content": gpt_prompt},
-                ],
-                max_tokens=1000  # トークン数を増やす
-            )
-            
-            analysis = response.choices[0].message['content'].strip()
-            st.write(analysis)
-            
-            # 生成された分析結果をダウンロードするボタンを設置
-            st.download_button(label='分析結果をダウンロード', data=analysis, file_name='analysis.txt', mime='text/plain')
+        response = openai.ChatCompletion.create(
+            model="gpt-4-turbo",  # 軽量モデルを指定
+            messages=[
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=1000  # トークン数を増やす
+        )
         
-        except openai.error.OpenAIError as e:
-            st.error(f"APIリクエストでエラーが発生しました: {e}")
+        analysis = response['choices'][0]['message']['content'].strip()
+        st.write(analysis)
+        
+        # 生成された分析結果をダウンロードするボタンを設置
+        st.download_button(label='分析結果をダウンロード', data=analysis, file_name='analysis.txt', mime='text/plain')
 
 elif file_type == "PDFファイル":
     file_upload = st.file_uploader("ここに決算資料のPDFファイルをアップロードしてください。", type=["pdf"])
@@ -138,32 +132,20 @@ elif file_type == "PDFファイル":
             page = doc.load_page(page_num)
             text += page.get_text()
 
-        # 抽出されたテキストを隠すためにst.expanderを使用
-        with st.expander("抽出されたテキスト", expanded=False):
-            st.write(text)
-
-        # プロンプト選択のための選択肢を表示
-        selected_prompt = st.selectbox("分析の種類を選んでください。", list(prompt_option_list.keys()))
-        prompt = prompt_option_list[selected_prompt]
-
         # GPTに分析させる
-        st.write("分析結果:")
-        gpt_prompt = f"{prompt}\n\n以下の決算資料の内容を分析してください:\n\n{text[:3000]}"  # テキストを3000文字以内に制限
+        st.write("GPTによる分析:")
+        prompt = f"以下の決算資料の内容を分析し、重要なポイントを要約してください:\n\n{text[:3000]}"  # テキストを3000文字以内に制限
         
-        try:
-            response = openai.ChatCompletion.create(
-                model="gpt-4-turbo",  # 軽量モデルを指定
-                messages=[
-                    {"role": "user", "content": gpt_prompt},
-                ],
-                max_tokens=1000  # トークン数を増やす
-            )
-            
-            analysis = response.choices[0].message['content'].strip()
-            st.write(analysis)
-            
-            # 生成された分析結果をダウンロードするボタンを設置
-            st.download_button(label='分析結果をダウンロード', data=analysis, file_name='analysis.txt', mime='text/plain')
+        response = openai.ChatCompletion.create(
+            model="gpt-4-turbo",  # 軽量モデルを指定
+            messages=[
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=1000  # トークン数を増やす
+        )
         
-        except openai.error.OpenAIError as e:
-            st.error(f"APIリクエストでエラーが発生しました: {e}")
+        analysis = response['choices'][0]['message']['content'].strip()
+        st.write(analysis)
+        
+        # 生成された分析結果をダウンロードするボタンを設置
+        st.download_button(label='分析結果をダウンロード', data=analysis, file_name='analysis.txt', mime='text/plain')

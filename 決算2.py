@@ -107,11 +107,11 @@ if file_type == "画像ファイル":
         
         try:
             response = openai.Chat.create(
-    model="gpt-4o-mini",  # 使用したいモデルを指定
+    model="gpt-4",  # 使用するモデルを指定
     messages=[
         {"role": "user", "content": gpt_prompt},
     ],
-    max_tokens=1000  # トークン数を設定
+    max_tokens=1000
 )
 
             

@@ -107,15 +107,14 @@ if file_type == "画像ファイル":
         
         try:
             response = openai.Chat.create(
-    model="gpt-4",  # 使用するモデルを指定
-    messages=[
-        {"role": "user", "content": gpt_prompt},
-    ],
-    max_tokens=1000
-)
-
+                model="gpt-4",  # 使用するモデルを指定
+                messages=[
+                    {"role": "user", "content": gpt_prompt},
+                ],
+                max_tokens=1000
+            )
             
-            analysis = response.choices[0]['message']['content'].strip()
+            analysis = response['choices'][0]['message']['content'].strip()
             st.write(analysis)
             
             # 生成された分析結果をダウンロードするボタンを設置
@@ -147,15 +146,15 @@ elif file_type == "PDFファイル":
         gpt_prompt = f"{prompt}\n\n以下の決算資料の内容を分析してください:\n\n{text[:3000]}"  # テキストを3000文字以内に制限
         
         try:
-            response = openai.ChatCompletion.create(
+            response = openai.Chat.create(
                 model="gpt-4-turbo",  # 使用するモデルを指定
                 messages=[
                     {"role": "user", "content": gpt_prompt},
                 ],
-                max_tokens=1000  # トークン数を増やす
+                max_tokens=1000
             )
             
-            analysis = response.choices[0]['message']['content'].strip()
+            analysis = response['choices'][0]['message']['content'].strip()
             st.write(analysis)
             
             # 生成された分析結果をダウンロードするボタンを設置

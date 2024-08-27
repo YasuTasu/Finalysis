@@ -1,3 +1,4 @@
+pip install openai==0.28
 import streamlit as st
 from PIL import Image
 import pytesseract

@@ -106,7 +106,7 @@ if file_type == "画像ファイル":
         gpt_prompt = f"{prompt}\n\n以下の決算資料の内容を分析してください:\n\n{txt[:3000]}"  # テキストを3000文字以内に制限
         
         try:
-            response = openai.ChatCompletion.create(
+            response = openai.chat.completions.create(
                 model="gpt-4-turbo",  # 使用するモデルを指定
                 messages=[
                     {"role": "user", "content": gpt_prompt},

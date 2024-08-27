@@ -146,7 +146,7 @@ elif file_type == "PDFファイル":
         gpt_prompt = f"{prompt}\n\n以下の決算資料の内容を分析してください:\n\n{text[:3000]}"  # テキストを3000文字以内に制限
         
         try:
-            response = openai.Chat.create(
+             response = openai.ChatCompletion.create(
                 model="gpt-4-turbo",  # 使用するモデルを指定
                 messages=[
                     {"role": "user", "content": gpt_prompt},

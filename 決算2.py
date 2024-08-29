@@ -76,7 +76,7 @@ prompt_option_list = {
 }
 
 # APIキーの設定
-openai.api_key = st.secrets["openai"]["api_key"]
+API_KEY = st.secrets['secrets.toml']['openai.api_key']
 
 # Streamlit アプリケーションの開始
 st.title("決算資料分析アプリ")

@@ -1,22 +1,28 @@
 import streamlit as st
-import openai
-import os
-import fitz  # PyMuPDF
+from PIL import Image
 import pytesseract
 import platform
+import openai
+from openai import OpenAI
+import os
+import fitz  # PyMuPDFをインポート
 import base64
 
 # ローカルのPNG画像を読み込む関数
 def get_base64_of_bin_file(bin_file):
-    with open(bin_file, 'rb') as f:
-        data = f.read()
+    data = bin_file.read()
     return base64.b64encode(data).decode()
 
 # ここで、背景にしたい画像のパスを指定します
 img_file_path = '2024-08-25 1300.png'
 
 # 画像をBase64にエンコード
-img_base64 = get_base64_of_bin_file(img_file_path)
+try:
+    with open(img_file_path, 'rb') as img_file:
+        img_base64 = get_base64_of_bin_file(img_file)
+except FileNotFoundError:
+    st.error("指定された背景画像ファイルが見つかりません。")
+    img_base64 = ''
 
 # CSSで背景画像を設定
 page_bg_img = f'''
@@ -56,8 +62,8 @@ if platform.system() == "Windows":
     pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
 
 # OCRエンジンの設定
-def ocr_image(image_path, lang='jpn'):
-    return pytesseract.image_to_string(image_path, lang=lang)
+def ocr_image(image, lang='jpn'):
+    return pytesseract.image_to_string(image, lang=lang)
 
 # 画像読み込みのための言語と言語のコードを変換するリストを設定
 set_language_list = {
@@ -76,7 +82,7 @@ prompt_option_list = {
 }
 
 # APIキーの設定
-openai.api_key = st.secrets["openai"]["api_key"]
+openai.api_key = "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"
 
 # Streamlit アプリケーションの開始
 st.title("決算資料分析アプリ")
@@ -103,24 +109,26 @@ if file_type == "画像ファイル":
 
         # GPTに分析させる
         st.write("分析結果:")
-        gpt_prompt = f"{prompt}\n\n以下の決算資料の内容を分析してください:\n\n{txt[:3000]}"  # テキストを3000文字以内に制限
+        gpt_prompt = f"{prompt}\n\n以下の決算資料の内容を分析してください:\n\n{text[:3000]}"  # テキストを3000文字以内に制限
         
         try:
-            response = openai.chat.completions.create(
-                model="gpt-4-turbo",  # 使用するモデルを指定
+            client = OpenAI()
+
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
                 messages=[
                     {"role": "user", "content": gpt_prompt},
                 ],
-                max_tokens=1000
+                max_tokens=1000  # トークン数を増やす
             )
-            
-            analysis = response.choices[0].message["content"].strip()
+
+            analysis = response.choices[0].message.content.strip()
             st.write(analysis)
             
             # 生成された分析結果をダウンロードするボタンを設置
             st.download_button(label='分析結果をダウンロード', data=analysis, file_name='analysis.txt', mime='text/plain')
         
-        except openai.OpenAIError as e:
+        except openai.PermissionDeniedError as e:
             st.error(f"APIリクエストでエラーが発生しました: {e}")
 
 elif file_type == "PDFファイル":
@@ -146,19 +154,21 @@ elif file_type == "PDFファイル":
         gpt_prompt = f"{prompt}\n\n以下の決算資料の内容を分析してください:\n\n{text[:3000]}"  # テキストを3000文字以内に制限
         
         try:
-            response = openai.ChatCompletion.create(
-                model="gpt-4-turbo",  # 使用するモデルを指定
+            client = OpenAI()
+
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
                 messages=[
                     {"role": "user", "content": gpt_prompt},
                 ],
-                max_tokens=1000
+                max_tokens=1000  # トークン数を増やす
             )
-            
-            analysis = response.choices[0].message["content"].strip()
+
+            analysis = response.choices[0].message.content.strip()
             st.write(analysis)
             
             # 生成された分析結果をダウンロードするボタンを設置
             st.download_button(label='分析結果をダウンロード', data=analysis, file_name='analysis.txt', mime='text/plain')
         
-        except openai.OpenAIError as e:
+        except openai.PermissionDeniedError as e:
             st.error(f"APIリクエストでエラーが発生しました: {e}")

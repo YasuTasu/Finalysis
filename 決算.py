@@ -115,7 +115,7 @@ if file_type == "画像ファイル":
             client = OpenAI()
 
             response = client.chat.completions.create(
-                model="gpt-4-turbo",
+                model="gpt-4o-mini",
                 messages=[
                     {"role": "user", "content": gpt_prompt},
                 ],
@@ -157,7 +157,7 @@ elif file_type == "PDFファイル":
             client = OpenAI()
 
             response = client.chat.completions.create(
-                model="gpt-4-turbo",
+                model="gpt-4o-mini",
                 messages=[
                     {"role": "user", "content": gpt_prompt},
                 ],

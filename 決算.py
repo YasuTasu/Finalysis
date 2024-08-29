@@ -82,7 +82,7 @@ prompt_option_list = {
 }
 
 # APIキーの設定
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = st.secrets["openai"]["api_key"]
 
 # Streamlit アプリケーションの開始
 st.title("決算資料分析アプリ")

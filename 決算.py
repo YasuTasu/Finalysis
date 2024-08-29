@@ -1,9 +1,9 @@
-pip install openai==0.28
 import streamlit as st
 from PIL import Image
 import pytesseract
 import platform
 import openai
+from openai import OpenAI
 import os
 import fitz  # PyMuPDFをインポート
 import base64
@@ -109,24 +109,26 @@ if file_type == "画像ファイル":
 
         # GPTに分析させる
         st.write("分析結果:")
-        gpt_prompt = f"{prompt}\n\n以下の決算資料の内容を分析してください:\n\n{txt[:3000]}"  # テキストを3000文字以内に制限
+        gpt_prompt = f"{prompt}\n\n以下の決算資料の内容を分析してください:\n\n{text[:3000]}"  # テキストを3000文字以内に制限
         
         try:
-            response = openai.ChatCompletion.create(
-                model="gpt-4o-mini",  # 小型モデルを指定
+            client = OpenAI()
+
+            response = client.chat.completions.create(
+                model="gpt-4-turbo",
                 messages=[
                     {"role": "user", "content": gpt_prompt},
                 ],
                 max_tokens=1000  # トークン数を増やす
             )
-            
-            analysis = response.choices[0].message['content'].strip()
+
+            analysis = response.choices[0].message.content.strip()
             st.write(analysis)
             
             # 生成された分析結果をダウンロードするボタンを設置
             st.download_button(label='分析結果をダウンロード', data=analysis, file_name='analysis.txt', mime='text/plain')
         
-        except openai.OpenAIError as e:
+        except openai.PermissionDeniedError as e:
             st.error(f"APIリクエストでエラーが発生しました: {e}")
 
 elif file_type == "PDFファイル":
@@ -152,19 +154,21 @@ elif file_type == "PDFファイル":
         gpt_prompt = f"{prompt}\n\n以下の決算資料の内容を分析してください:\n\n{text[:3000]}"  # テキストを3000文字以内に制限
         
         try:
-            response = openai.ChatCompletion.create(
-                model="gpt-4o-mini",  # 小型モデルを指定
+            client = OpenAI()
+
+            response = client.chat.completions.create(
+                model="gpt-4-turbo",
                 messages=[
                     {"role": "user", "content": gpt_prompt},
                 ],
                 max_tokens=1000  # トークン数を増やす
             )
-            
-            analysis = response.choices[0].message['content'].strip()
+
+            analysis = response.choices[0].message.content.strip()
             st.write(analysis)
             
             # 生成された分析結果をダウンロードするボタンを設置
             st.download_button(label='分析結果をダウンロード', data=analysis, file_name='analysis.txt', mime='text/plain')
         
-        except openai.OpenAIError as e:
+        except openai.PermissionDeniedError as e:
             st.error(f"APIリクエストでエラーが発生しました: {e}")

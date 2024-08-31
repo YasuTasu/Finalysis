@@ -1,4 +1,3 @@
-import streamlit as st
 from PIL import Image
 import pytesseract
 import platform
@@ -82,7 +81,7 @@ prompt_option_list = {
 }
 
 # APIキーの設定
-openai.api_key = st.Secrets["openai"]["api_key"]
+openai.api_key = st.secrets["openai"]["api_key"]
 
 # Streamlit アプリケーションの開始
 st.title("決算資料分析アプリ")

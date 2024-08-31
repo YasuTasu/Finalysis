@@ -68,6 +68,8 @@ except KeyError:
     st.error("OCR.spaceのAPIキーが設定されていません。")
     OCR_SPACE_API_KEY = ""
 
+    OCR_SPACE_API_URL = "https://api.ocr.space/parse/image"
+
 # OCRを行う関数
 def ocr_image(image_file):
     if not OCR_SPACE_API_KEY:

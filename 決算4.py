@@ -98,9 +98,11 @@ if file_type == "画像ファイル":
     file_upload = st.file_uploader("ここに決算資料の画像ファイルをアップロードしてください。", type=["png", "jpg"])
     
     if file_upload is not None:
-        st.image(file_upload)
+        # PIL.Imageに変換
+        image = Image.open(io.BytesIO(file_upload.read()))
+        st.image(image, caption='アップロードされた画像', use_column_width=True)
         selected_language = st.selectbox("文字認識する言語を選んでください。", list(set_language_list.keys()))
-        txt = ocr_image(file_upload, lang=set_language_list[selected_language])
+        txt = ocr_image(image, lang=set_language_list[selected_language])
         
         # 抽出されたテキストを隠すためにst.expanderを使用
         with st.expander("抽出されたテキスト", expanded=False):

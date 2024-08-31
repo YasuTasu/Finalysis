@@ -5,6 +5,7 @@ import platform
 import openai
 from openai import OpenAI
 import os
+import io  # io モジュールをインポート
 import fitz  # PyMuPDFをインポート
 import base64
 

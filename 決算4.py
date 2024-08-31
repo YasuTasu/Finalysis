@@ -1,6 +1,5 @@
 import streamlit as st
 from PIL import Image
-import pytesseract
 import platform
 import openai
 from openai import OpenAI

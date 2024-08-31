@@ -8,6 +8,9 @@ import os
 import io  # io モジュールをインポート
 import fitz  # PyMuPDFをインポート
 import base64
+import requests
+
+
 
 # ローカルのPNG画像を読み込む関数
 def get_base64_of_bin_file(bin_file):
@@ -58,13 +61,20 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Tesseractのパスを指定 (Windows用)
-if platform.system() == "Windows":
-    pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
 
-# OCRエンジンの設定
-def ocr_image(image, lang='jpn'):
-    return pytesseract.image_to_string(image, lang=lang)
+# OCR.space APIのキーとエンドポイント
+OCR_SPACE_API_KEY = st.secrets["ocr_space"]["api_key"]
+OCR_SPACE_API_URL = "https://api.ocr.space/parse/image"
+
+# OCRを行う関数
+def ocr_image(image_file):
+    response = requests.post(
+        OCR_SPACE_API_URL,
+        files={"file": image_file},
+        data={"apikey": OCR_SPACE_API_KEY}
+    )
+    result = response.json()
+    return result.get('ParsedResults', [{}])[0].get('ParsedText', '')
 
 # 画像読み込みのための言語と言語のコードを変換するリストを設定
 set_language_list = {

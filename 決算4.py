@@ -1,6 +1,5 @@
 import streamlit as st
 from PIL import Image
-import openai
 import io  # io モジュールをインポート
 import fitz  # PyMuPDFをインポート
 import base64
@@ -69,11 +68,19 @@ def ocr_image(image_file):
     if not OCR_SPACE_API_KEY:
         return "OCR.space APIキーが設定されていません。"
     
+    # 画像ファイルのバッファを取得
+    image_file.seek(0)
+    
     response = requests.post(
         OCR_SPACE_API_URL,
         files={"file": image_file},
         data={"apikey": OCR_SPACE_API_KEY}
     )
+    
+    # レスポンス内容の確認
+    if response.status_code != 200:
+        return f"リクエスト失敗: {response.status_code} {response.text}"
+    
     result = response.json()
     return result.get('ParsedResults', [{}])[0].get('ParsedText', '')
 
@@ -96,9 +103,6 @@ prompt_option_list = {
 # APIキーの設定
 openai.api_key = st.secrets["openai"]["api_key"]
 
-# OpenAIクライアントのインスタンスを作成する
-client = openai.OpenAI(api_key=openai.api_key)
-
 # Streamlit アプリケーションの開始
 st.title("決算資料分析アプリ")
 
@@ -110,9 +114,13 @@ if file_type == "画像ファイル":
     file_upload = st.file_uploader("ここに決算資料の画像ファイルをアップロードしてください。", type=["png", "jpg"])
     
     if file_upload is not None:
-        # PIL.Imageに変換
+        # 画像ファイルを処理するための読み込み
         image = Image.open(io.BytesIO(file_upload.read()))
         st.image(image, caption='アップロードされた画像', use_column_width=True)
+        
+        # 画像ファイルを再度バイナリモードで読み込み
+        file_upload.seek(0)
+        
         # OCRを実行
         txt = ocr_image(file_upload)
         
@@ -129,21 +137,21 @@ if file_type == "画像ファイル":
         gpt_prompt = f"{prompt}\n\n以下の決算資料の内容を分析してください:\n\n{txt[:3000]}"  # テキストを3000文字以内に制限
         
         try:
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
+            response = openai.ChatCompletion.create(
+                model="gpt-4",
                 messages=[
                     {"role": "user", "content": gpt_prompt},
                 ],
-                max_tokens=1000  # トークン数を増やす
+                max_tokens=1000
             )
 
-            analysis = response.choices[0].message.content.strip()
+            analysis = response.choices[0].message['content'].strip()
             st.write(analysis)
             
             # 生成された分析結果をダウンロードするボタンを設置
             st.download_button(label='分析結果をダウンロード', data=analysis, file_name='analysis.txt', mime='text/plain')
         
-        except openai.PermissionDeniedError as e:
+        except openai.OpenAIError as e:
             st.error(f"APIリクエストでエラーが発生しました: {e}")
 
 elif file_type == "PDFファイル":
@@ -169,19 +177,19 @@ elif file_type == "PDFファイル":
         gpt_prompt = f"{prompt}\n\n以下の決算資料の内容を分析してください:\n\n{text[:3000]}"  # テキストを3000文字以内に制限
         
         try:
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
+            response = openai.ChatCompletion.create(
+                model="gpt-4",
                 messages=[
                     {"role": "user", "content": gpt_prompt},
                 ],
-                max_tokens=1000  # トークン数を増やす
+                max_tokens=1000
             )
 
-            analysis = response.choices[0].message.content.strip()
+            analysis = response.choices[0].message['content'].strip()
             st.write(analysis)
             
             # 生成された分析結果をダウンロードするボタンを設置
             st.download_button(label='分析結果をダウンロード', data=analysis, file_name='analysis.txt', mime='text/plain')
         
-        except openai.PermissionDeniedError as e:
+        except openai.OpenAIError as e:
             st.error(f"APIリクエストでエラーが発生しました: {e}")

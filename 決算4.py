@@ -1,15 +1,10 @@
 import streamlit as st
 from PIL import Image
-import platform
 import openai
-from openai import OpenAI
-import os
 import io  # io モジュールをインポート
 import fitz  # PyMuPDFをインポート
 import base64
 import requests
-
-
 
 # ローカルのPNG画像を読み込む関数
 def get_base64_of_bin_file(bin_file):
@@ -59,7 +54,6 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
-
 
 # OCR.space APIのキーとエンドポイント
 try:
@@ -119,8 +113,8 @@ if file_type == "画像ファイル":
         # PIL.Imageに変換
         image = Image.open(io.BytesIO(file_upload.read()))
         st.image(image, caption='アップロードされた画像', use_column_width=True)
-        selected_language = st.selectbox("文字認識する言語を選んでください。", list(set_language_list.keys()))
-        txt = ocr_image(image, lang=set_language_list[selected_language])
+        # OCRを実行
+        txt = ocr_image(file_upload)
         
         # 抽出されたテキストを隠すためにst.expanderを使用
         with st.expander("抽出されたテキスト", expanded=False):
@@ -135,7 +129,6 @@ if file_type == "画像ファイル":
         gpt_prompt = f"{prompt}\n\n以下の決算資料の内容を分析してください:\n\n{txt[:3000]}"  # テキストを3000文字以内に制限
         
         try:
-
             response = client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
@@ -176,7 +169,6 @@ elif file_type == "PDFファイル":
         gpt_prompt = f"{prompt}\n\n以下の決算資料の内容を分析してください:\n\n{text[:3000]}"  # テキストを3000文字以内に制限
         
         try:
-         
             response = client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[

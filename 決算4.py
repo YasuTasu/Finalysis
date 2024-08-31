@@ -75,7 +75,7 @@ def ocr_image(image_file):
     response = requests.post(
         OCR_SPACE_API_URL,
         files={"file": image_file},
-        data={"apikey": OCR_SPACE_API_KEY}
+        data={"apikey": OCR_SPACE_API_KEY, "language": "jpn"}  # 例: 日本語設定
     )
     
     # レスポンス内容の確認

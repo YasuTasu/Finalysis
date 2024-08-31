@@ -62,11 +62,17 @@ st.markdown("""
 
 
 # OCR.space APIのキーとエンドポイント
-OCR_SPACE_API_KEY = st.secrets["ocr_space"]["api_key"]
-OCR_SPACE_API_URL = "https://api.ocr.space/parse/image"
+try:
+    OCR_SPACE_API_KEY = st.secrets["ocr_space"]["api_key"]
+except KeyError:
+    st.error("OCR.spaceのAPIキーが設定されていません。")
+    OCR_SPACE_API_KEY = ""
 
 # OCRを行う関数
 def ocr_image(image_file):
+    if not OCR_SPACE_API_KEY:
+        return "OCR.space APIキーが設定されていません。"
+    
     response = requests.post(
         OCR_SPACE_API_URL,
         files={"file": image_file},

@@ -1,3 +1,4 @@
+import streamlit as st
 from PIL import Image
 import pytesseract
 import platform
@@ -108,7 +109,7 @@ if file_type == "画像ファイル":
 
         # GPTに分析させる
         st.write("分析結果:")
-        gpt_prompt = f"{prompt}\n\n以下の決算資料の内容を分析してください:\n\n{text[:3000]}"  # テキストを3000文字以内に制限
+        gpt_prompt = f"{prompt}\n\n以下の決算資料の内容を分析してください:\n\n{txt[:3000]}"  # テキストを3000文字以内に制限
         
         try:
             client = OpenAI()

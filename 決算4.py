@@ -85,13 +85,6 @@ def ocr_image(image_file):
     result = response.json()
     return result.get('ParsedResults', [{}])[0].get('ParsedText', '')
 
-# 画像読み込みのための言語と言語のコードを変換するリストを設定
-set_language_list = {
-    "日本語": "jpn",
-    "英語": "eng",
-}
-
-
 # 選択肢を作成
 prompt_option_list = {
     "重要なポイントを要約": "決算資料の内容を分析し、重要なポイントを要約してください。",

@@ -56,13 +56,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # OCR.space APIのキーとエンドポイント
-try:
-    OCR_SPACE_API_KEY = st.secrets["ocr_space"]["api_key"]
-    OCR_SPACE_API_URL = "https://api.ocr.space/parse/image"
-except KeyError:
-    st.error("OCR.spaceのAPIキーが設定されていません。Streamlit CloudのSecrets設定を確認してください。")
-    OCR_SPACE_API_KEY = ""
-    OCR_SPACE_API_URL = ""
+OCR_SPACE_API_KEY = st.secrets["ocr_space"]["api_key"]
+OCR_SPACE_API_URL = "https://api.ocr.space/parse/image"
 
 # OCRを行う関数
 def ocr_image(image_file):
